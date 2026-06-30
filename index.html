@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hellforged | Vanguard Logs</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Hellforged Brand Colors */
+            --color-base: #0E0822; 
+            --color-primary: #C95FE8; 
+            --color-primary-hover: #e08bff; 
+            --color-gold: #E9B96A; 
+            --color-dark: #22202F; 
+            --color-neutral: #8B86A8; 
+            --color-light: #F0ECF5; 
+            --color-darker: #070412; 
+            
+            --border-glow: 0 0 12px rgba(201, 95, 232, 0.3);
+            --panel-bg: rgba(34, 32, 47, 0.8);
+            
+            --scrollbar-bg: var(--color-darker);
+            --scrollbar-thumb: var(--color-dark);
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-base);
+            color: var(--color-light);
+            margin: 0;
+            padding: 0 0 50px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5 { font-family: 'Cinzel', serif; font-weight: 700; text-transform: uppercase; margin-top: 0; }
+
+        /* --- Hero & Config --- */
+        .hero-banner {
+            width: 100%; 
+            height: 220px;
+            /* Gradient is declared first to sit ON TOP of the keyart image, fading into the base background color */
+            background-image: linear-gradient(180deg, rgba(14,8,34,0) 0%, var(--color-base) 100%), url('keyart.jpg');
+            background-size: cover; 
+            background-position: center 24%; 
+            background-repeat: no-repeat;
+            background-color: var(--color-base); /* Fallback */
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            border-bottom: 1px solid var(--color-dark);
+        }
+        .hero-banner h1 { font-size: 42px; margin-bottom: 5px; text-shadow: 0 4px 20px rgba(0,0,0,0.9); letter-spacing: 3px; }
+
+        .config-deck {
+            width: 95%; max-width: 1400px; background: var(--panel-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--color-dark); border-top: 2px solid var(--color-primary);
+            padding: 20px 30px; border-radius: 4px; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            margin-top: -30px; z-index: 10; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 40px;
+        }
+        .input-group { flex: 1 1 200px; display: flex; flex-direction: column; }
+        .input-group label { font-size: 11px; text-transform: uppercase; color: var(--color-neutral); margin-bottom: 6px; font-weight: 600; }
+        .input-group input, .input-group select {
+            padding: 10px 12px; background: var(--color-darker); border: 1px solid var(--color-dark);
+            color: var(--color-light); border-radius: 2px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
+        }
+        .input-group input:focus, .input-group select:focus { border-color: var(--color-primary); box-shadow: var(--border-glow); }
+        .input-group.checkbox { flex-direction: row; align-items: center; gap: 8px; flex: 0 1 auto; margin-bottom: 10px; }
+        .input-group.checkbox label { margin-bottom: 0; cursor: pointer; }
+
+        .btn-primary {
+            background-color: var(--color-primary); color: #fff; border: none; padding: 11px 24px;
+            font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; border-radius: 2px;
+            cursor: pointer; text-transform: uppercase; height: 40px; flex: 0 1 auto; transition: 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--color-primary-hover); box-shadow: var(--border-glow); }
+
+        /* --- Main Data Table --- */
+        .module-container { width: 95%; max-width: 1400px; background: var(--panel-bg); border: 1px solid var(--color-dark); border-radius: 4px; padding: 20px; display: none; overflow-x: auto; }
+        .module-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-dark); padding-bottom: 15px; margin-bottom: 20px; }
+        .module-header h3 { color: var(--color-gold); margin: 0; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid var(--color-dark); vertical-align: middle; }
+        th { background-color: rgba(7,4,18,0.6); color: var(--color-neutral); font-family: 'Cinzel', serif; font-weight: 600; white-space: nowrap; }
+        tr:hover td { background-color: rgba(201, 95, 232, 0.04); }
+        .rank-col { font-family: 'Cinzel', serif; font-weight: 700; color: var(--color-gold); text-align: center; font-size: 16px; }
+        .sub-text { font-size: 11px; color: var(--color-neutral); margin-top: 4px; display: block; }
+        .primary-text { font-weight: 500; color: var(--color-light); }
+        
+        .badge { display: inline-block; padding: 4px 6px; border-radius: 2px; font-size: 10px; font-weight: 600; text-transform: uppercase; background-color: var(--color-dark); border: 1px solid var(--color-dark); color: var(--color-neutral); }
+        .badge-success { border-color: #4caf50; color: #4caf50; background: rgba(76,175,80,0.1); }
+        .badge-danger { border-color: #ff5252; color: #ff5252; background: rgba(255,82,82,0.1); }
+        
+        .btn-outline { background: transparent; border: 1px solid var(--color-primary); color: var(--color-primary); padding: 6px 12px; font-size: 12px; border-radius: 2px; cursor: pointer; transition: 0.2s; }
+        .btn-outline:hover { background: var(--color-primary); color: #fff; }
+
+        /* --- Expanded Dashboard Layout --- */
+        .inspect-row { background: var(--color-darker) !important; border-left: 2px solid var(--color-primary); }
+        .inspect-row:hover td { background: transparent; }
+        .inspect-row td { padding: 30px !important; }
+
+        .dash-panel { background: var(--color-base); border: 1px solid var(--color-dark); border-radius: 4px; padding: 25px; margin-bottom: 25px; }
+        .dash-panel h4 { display: flex; align-items: center; justify-content: space-between; color: var(--color-gold); border-bottom: 1px solid var(--color-dark); padding-bottom: 12px; margin-bottom: 20px; font-size: 16px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px;}
+        .stat-box { background: var(--color-darker); border: 1px solid var(--color-dark); padding: 15px; border-radius: 2px;}
+        .stat-box h5 { color: var(--color-primary); margin-bottom: 12px; font-size: 13px; border-bottom: 1px dashed var(--color-dark); padding-bottom: 8px;}
+        .kv-pair { display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 12px; }
+        .kv-label { color: var(--color-neutral); }
+        .kv-val { font-weight: 500; color: var(--color-light); }
+
+        .ability-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ability-tag { background: var(--color-darker); border: 1px solid var(--color-dark); padding: 6px 12px; font-size: 12px; border-left: 2px solid var(--color-gold); }
+
+        /* --- HORIZONTAL EVENT TIMELINE --- */
+        .timeline-controls { display: flex; gap: 8px; align-items: center; font-family: 'Inter', sans-serif;}
+        .controls-hint { font-size: 11px; color: var(--color-neutral); margin-right: 15px; text-transform: none; font-weight: 400;}
+        .btn-zoom { 
+            background: var(--color-darker); border: 1px solid var(--color-dark); color: var(--color-light); 
+            padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 2px; text-transform: uppercase; transition: 0.2s;
+        }
+        .btn-zoom:hover { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+        .h-timeline-scroll { 
+            width: 100%; overflow-x: auto; 
+            padding: 140px 20px 60px 20px; 
+            border: 1px solid var(--color-dark); background: var(--color-darker); border-radius: 2px; 
+            box-sizing: border-box;
+        }
+        .h-timeline-wrap { position: relative; height: 10px; min-width: 100%; transition: width 0.2s ease-out; }
+        
+        .h-timeline-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--color-dark); }
+        .h-timeline-progress { position: absolute; top: 0; left: 0; height: 2px; background: var(--color-primary); box-shadow: var(--border-glow); }
+        
+        /* High Contrast 2-Minute Background Ticks */
+        .h-timeline-tick {
+            position: absolute; top: -15px; bottom: -30px; width: 1px;
+            border-left: 1px dashed rgba(255, 255, 255, 0.2); pointer-events: none; z-index: 1;
+        }
+        .h-timeline-tick-label {
+            position: absolute; bottom: -15px; left: 6px; font-family: monospace;
+            font-size: 13px; color: var(--color-light); font-weight: 700; opacity: 0.95;
+        }
+
+        /* The Nodes */
+        .h-timeline-node {
+            position: absolute; top: 0; transform: translate(-50%, -50%);
+            width: 26px; height: 26px; background: var(--color-darker); border: 2px solid var(--color-gold);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; z-index: 10;
+        }
+        .h-timeline-node:hover { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 15px rgba(233, 185, 106, 0.4); z-index: 20; border-color: #fff; }
+        .h-timeline-node img { width: 14px; height: 14px; opacity: 0.9; border-radius: 2px;}
+        
+        .h-timeline-time-label {
+            position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
+            font-family: monospace; font-size: 12px; color: var(--color-gold); font-weight: bold;
+            pointer-events: none; white-space: nowrap; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .h-timeline-tooltip {
+            position: absolute; bottom: 180%; left: 50%; transform: translate(-50%, 10px);
+            background: var(--color-darker); border: 1px solid var(--color-gold); box-shadow: 0 5px 25px rgba(0,0,0,0.9);
+            padding: 12px; border-radius: 2px; width: max-content; max-width: 280px;
+            opacity: 0; visibility: hidden; transition: all 0.2s; text-align: center;
+            pointer-events: none; z-index: 100; font-size: 12px; color: var(--color-light); line-height: 1.5;
+        }
+        .h-timeline-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+            border-width: 6px; border-style: solid; border-color: var(--color-gold) transparent transparent transparent;
+        }
+
+        .h-timeline-node:hover .h-timeline-tooltip { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+        .tooltip-time { color: var(--color-gold); font-family: monospace; font-size: 12px; font-weight: bold; border-bottom: 1px dashed var(--color-dark); padding-bottom: 4px; margin-bottom: 6px; display: block; }
+        .tooltip-event { margin-bottom: 4px; }
+        .tooltip-event:last-child { margin-bottom: 0; }
+        .tooltip-event strong { color: var(--color-primary); }
+
+        /* --- VERTICAL TELEMETRY MATRIX --- */
+        .v-matrix-container { display: flex; flex-direction: column; }
+        .v-matrix-row { display: flex; position: relative; }
+        
+        .v-matrix-timecol {
+            flex: 0 0 90px; border-right: 2px solid var(--color-dark); position: relative;
+            padding-right: 20px; padding-top: 15px; text-align: right; font-family: monospace;
+            color: var(--color-gold); font-weight: bold; font-size: 13px;
+        }
+        .v-matrix-row:not(:last-child) .v-matrix-timecol::after {
+            content: ''; position: absolute; right: -2px; top: 35px; bottom: 0; width: 2px;
+            background: linear-gradient(180deg, var(--color-primary) 0%, transparent 100%); opacity: 0.2;
+        }
+
+        .v-matrix-marker {
+            position: absolute; right: -8px; top: 16px; width: 14px; height: 14px;
+            background: var(--color-darker); border: 2px solid var(--color-primary); transform: rotate(45deg);
+        }
+        
+        .v-matrix-datacol { flex: 1; padding-left: 30px; padding-bottom: 40px; }
+        
+        .v-matrix-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
+            background: var(--color-darker); border: 1px solid var(--color-dark); border-radius: 4px; padding: 15px;
+        }
+        .v-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .v-stat span:first-child { color: var(--color-neutral); }
+        .v-stat span:last-child { color: var(--color-light); font-weight: 500; text-align: right;}
+        
+        .val-primary { color: var(--color-primary) !important; }
+        .val-gold { color: var(--color-gold) !important; }
+        .val-hp { color: #4caf50 !important; }
+        .val-shield { color: #00bcd4 !important; }
+
+        .json-summary { cursor: pointer; color: var(--color-neutral); font-size: 12px; padding: 8px 12px; border: 1px solid var(--color-dark); background: var(--color-darker); margin-top: 10px; display: inline-block;}
+        .json-summary:hover { color: var(--color-light); background: var(--color-dark);}
+        .json-content { margin-top: 10px; padding: 15px; background: #000; border: 1px solid var(--color-dark); max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 11px; white-space: pre-wrap; color: var(--color-primary); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hero-banner">
+    <h1>Hellforged</h1>
+</div>
+
+<!-- Control Deck -->
+<div class="config-deck">
+    <div class="input-group">
+        <label for="apiKey">Secure Authentication Key</label>
+        <input type="password" id="apiKey" placeholder="Enter API Key">
+    </div>
+    <div class="input-group">
+        <label for="exportType">Leaderboard Target</label>
+        <select id="exportType">
+            <option value="rotating-challenge">Rotating Challenge</option>
+            <option value="expedition-weekly" selected>Expedition Weekly</option>
+        </select>
+    </div>
+    <div class="input-group" id="scopeGroup">
+        <label for="exportScope">Temporal Scope</label>
+        <select id="exportScope">
+            <option value="current">Current Live Cycle</option>
+            <option value="latest">Previous Finalized</option>
+        </select>
+    </div>
+    <div class="input-group" style="flex: 0 1 120px;" id="topGroup">
+        <label for="topPlayers">Rows</label>
+        <input type="number" id="topPlayers" value="20" min="1">
+    </div>
+    <div class="input-group checkbox">
+        <input type="checkbox" id="saveKey">
+        <label for="saveKey">Save Key locally</label>
+    </div>
+    <button class="btn-primary" id="loadBtn">Extract Logs</button>
+</div>
+
+<!-- Main Table Module -->
+<div class="module-container" id="tableContainer">
+    <div class="module-header">
+        <h3 id="tableTitle">Extracted Telemetry</h3>
+        <span id="logArea" style="font-family: monospace; font-size: 12px; color: var(--color-neutral);">Awaiting command...</span>
+    </div>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th style="text-align:center;">Rank</th>
+                <th>Combatant</th>
+                <th>Score & Settings</th>
+                <th>Survival Time</th>
+                <th>End State</th>
+                <th>Damage Output</th>
+                <th>Economy</th>
+                <th>Kills</th>
+                <th style="text-align:center;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Rows injected by JS -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const logArea = document.getElementById('logArea');
+    const apiKeyInput = document.getElementById('apiKey');
+    const saveKeyCheck = document.getElementById('saveKey');
+    const exportTypeSelect = document.getElementById('exportType');
+    const exportScopeSelect = document.getElementById('exportScope');
+    const topGroup = document.getElementById('topGroup');
+    const topPlayersInput = document.getElementById('topPlayers');
+    const loadBtn = document.getElementById('loadBtn');
+    
+    const tableContainer = document.getElementById('tableContainer');
+    const tableBody = document.getElementById('tableBody');
+
+    if (localStorage.getItem('hellforgedKey')) {
+        apiKeyInput.value = localStorage.getItem('hellforgedKey');
+        saveKeyCheck.checked = true;
+    }
+
+    function addLog(msg, isError = false) {
+        logArea.textContent = msg;
+        logArea.style.color = isError ? '#ff5252' : 'var(--color-neutral)';
+    }
+
+    function formatTime(ms) {
+        if (ms == null) return '-';
+        const totalSec = Math.floor(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return `${m}m ${s}s`;
+    }
+
+    function formatCompact(num) {
+        if (num == null) return '-';
+        return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(num);
+    }
+    
+    function formatBP(bp) {
+        return bp != null ? `${(bp / 100).toFixed(1)}%` : '-';
+    }
+
+    function escapeHtml(str) {
+        if (typeof str !== 'string') return String(str);
+        return str.replace(/[&<"']/g, m => ({ '&': '&amp;', '<': '&lt;', '"': '&quot;', "'": '&#039;' })[m]);
+    }
+
+    // --- TIMELINE PANNING LOGIC ---
+    // Maps standard vertical mouse scrolling to pan horizontally inside the timeline
+    document.addEventListener('wheel', function(e) {
+        const scrollContainer = e.target.closest('.h-timeline-scroll');
+        if (!scrollContainer) return;
+        
+        // Let user pan sideways using normal mouse scroll
+        if (Math.abs(e.deltaY) > 0 && !e.ctrlKey && !e.shiftKey) {
+            e.preventDefault();
+            scrollContainer.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+
+    // --- ZOOM LOGIC (Button Exclusive) ---
+    window.zoomTimeline = function(uid, delta) {
+        const wrap = document.getElementById(`timeline-wrap-${uid}`);
+        if (!wrap) return;
+        
+        let currentScale = parseFloat(wrap.getAttribute('data-scale')) || 1;
+        let newScale = currentScale;
+        
+        if (delta === 0) {
+            newScale = 1; // Reset
+        } else {
+            newScale += delta;
+            if (newScale < 1) newScale = 1;
+            if (newScale > 15) newScale = 15; // Max zoom limit
+        }
+        
+        wrap.setAttribute('data-scale', newScale);
+        wrap.style.width = (newScale * 100) + '%';
+    };
+
+    // --- HORIZONTAL TIMELINE RENDERER ---
+    function buildHorizontalTimeline(events, timeSurvivedMs, uId) {
+        if (!events) return '<p class="sub-text">No timeline data available.</p>';
+        
+        let allEvents = [];
+        
+        if (events.levelMilestones) {
+            events.levelMilestones.forEach(e => allEvents.push({ time: e.elapsedMs, text: `Reached Level <strong style="color:var(--color-primary)">${e.level}</strong>`, icon: 'level.png', border: 'var(--color-primary)' }));
+        }
+        if (events.treasureChestOpens) {
+            events.treasureChestOpens.forEach(e => allEvents.push({ time: e.elapsedMs, text: `Breached ${e.locked ? '<strong style="color:var(--color-gold)">Locked</strong>' : 'Unlocked'} Chest`, icon: 'chest.png', border: 'var(--color-gold)' }));
+        }
+        if (events.effigyActivations) {
+            events.effigyActivations.forEach(e => allEvents.push({ time: e.elapsedMs, text: `Activated Effigy (+${(e.scoreBonusBasisPoints/100).toFixed(0)}%)`, icon: 'effigy.png', border: '#4caf50' }));
+        }
+
+        if (allEvents.length === 0) return '<p class="sub-text" style="padding:0 20px;">No chronological events recorded during this run.</p>';
+
+        const maxTime = Math.max(timeSurvivedMs || 0, ...allEvents.map(e => e.time));
+        if (maxTime === 0) return '<p class="sub-text">Invalid time scale.</p>';
+
+        // Group exact matches
+        const groupedEvents = {};
+        allEvents.forEach(e => {
+            if (!groupedEvents[e.time]) groupedEvents[e.time] = [];
+            groupedEvents[e.time].push(e);
+        });
+
+        const progressPct = timeSurvivedMs ? Math.min((timeSurvivedMs / maxTime) * 100, 100) : 100;
+
+        let html = `
+        <div class="h-timeline-scroll">
+            <div class="h-timeline-wrap" id="timeline-wrap-${uId}" data-scale="1" style="width: 100%;">
+                
+                <!-- Background Time Ticks (Every 2 min) -->
+                ${buildTimeTicks(maxTime)}
+
+                <div class="h-timeline-line"></div>
+                <div class="h-timeline-progress" style="width: ${progressPct}%"></div>
+        `;
+
+        Object.keys(groupedEvents).forEach(timeStr => {
+            const time = parseInt(timeStr);
+            const evts = groupedEvents[timeStr];
+            let leftPct = (time / maxTime) * 100;
+            if (leftPct > 100) leftPct = 100;
+
+            const mainIcon = evts[0].icon;
+            const mainBorder = evts[0].border;
+            const tooltipLines = evts.map(e => `<div class="tooltip-event">${e.text}</div>`).join('');
+
+            html += `
+            <div class="h-timeline-node" style="left: ${leftPct}%; border-color: ${mainBorder};">
+                <img src="${mainIcon}" alt="icon">
+                <div class="h-timeline-time-label">${formatTime(time)}</div>
+                <div class="h-timeline-tooltip">
+                    <span class="tooltip-time">${formatTime(time)}</span>
+                    ${tooltipLines}
+                </div>
+            </div>`;
+        });
+
+        html += '</div></div>';
+        return html;
+    }
+
+    // Generate constant 2-minute tick markers
+    function buildTimeTicks(maxTime) {
+        let ticks = '';
+        const interval = 120000; // 2 minutes in ms
+        for (let t = interval; t <= maxTime; t += interval) {
+            let leftPct = (t / maxTime) * 100;
+            ticks += `
+            <div class="h-timeline-tick" style="left: ${leftPct}%;">
+                <div class="h-timeline-tick-label">${t / 60000}m</div>
+            </div>`;
+        }
+        return ticks;
+    }
+
+    // --- VERTICAL TELEMETRY MATRIX ---
+    function buildVerticalMatrix(timeline) {
+        if (!timeline || !timeline.columns || !timeline.values || timeline.values.length === 0) {
+            return '<p class="sub-text" style="padding: 0 20px;">No telemetry data logged for this run.</p>';
+        }
+
+        const cols = timeline.columns;
+        const getIdx = (name) => cols.indexOf(name);
+        
+        const iMap = {
+            time: getIdx('elapsedMs'), score: getIdx('score'), gold: getIdx('currentGold'),
+            dps: getIdx('averageDps'), baseDmg: getIdx('baseDamageCenti'), allDmgBonus: getIdx('allDamageBonusBasisPoints'),
+            critChance: getIdx('criticalChanceBasisPoints'), critDmg: getIdx('criticalDamageBasisPoints'),
+            hpCur: getIdx('currentHealth'), hpMax: getIdx('maxLife'), hpRegen: getIdx('lifeRegen'), lifesteal: getIdx('lifestealChanceBasisPoints'),
+            shieldCur: getIdx('currentShield'), shieldMax: getIdx('maxEnergyShield'), shieldRechargeDelay: getIdx('shieldRechargeDelayCenti'), shieldRechargeAmt: getIdx('shieldRechargeAmountCenti'),
+            speed: getIdx('moveSpeedCenti'), meters: getIdx('heroMetersTraveled'),
+            kReg: getIdx('enemyKillsRegular'), kEli: getIdx('enemyKillsElite'), kCha: getIdx('enemyKillsChampion'), kBos: getIdx('enemyKillsBoss')
+        };
+
+        const getVal = (row, idx) => idx !== -1 ? row[idx] : null;
+
+        let html = '<div class="v-matrix-container">';
+
+        timeline.values.forEach(row => {
+            const timeStr = formatTime(getVal(row, iMap.time));
+            
+            const dataGrid = `
+                <div class="v-stat"><span>Score (Cumulative)</span><span class="val-light">${getVal(row, iMap.score)?.toLocaleString() ?? '-'}</span></div>
+                <div class="v-stat"><span>Current Gold</span><span class="val-gold">${getVal(row, iMap.gold)?.toLocaleString() ?? '-'}</span></div>
+                <div class="v-stat"><span>Avg DPS</span><span class="val-primary">${formatCompact(getVal(row, iMap.dps))}</span></div>
+                
+                <div class="v-stat"><span>Health (Cur / Max)</span><span class="val-hp">${getVal(row, iMap.hpCur) ?? '-'} / ${getVal(row, iMap.hpMax) ?? '-'}</span></div>
+                <div class="v-stat"><span>Shield (Cur / Max)</span><span class="val-shield">${getVal(row, iMap.shieldCur) ?? '-'} / ${getVal(row, iMap.shieldMax) ?? '-'}</span></div>
+                
+                <div class="v-stat"><span>Crit Chance / Dmg</span><span>${formatBP(getVal(row, iMap.critChance))} / ${formatBP(getVal(row, iMap.critDmg))}</span></div>
+                <div class="v-stat"><span>All Damage Bonus</span><span>${formatBP(getVal(row, iMap.allDmgBonus))}</span></div>
+                <div class="v-stat"><span>Base Damage (Centi)</span><span>${getVal(row, iMap.baseDmg) ?? '-'}</span></div>
+                
+                <div class="v-stat"><span>Lifesteal / Regen</span><span>${formatBP(getVal(row, iMap.lifesteal))} / ${getVal(row, iMap.hpRegen) ?? '-'}</span></div>
+                <div class="v-stat"><span>Shield Delay / Amt</span><span>${getVal(row, iMap.shieldRechargeDelay) ?? '-'}c / ${getVal(row, iMap.shieldRechargeAmt) ?? '-'}c</span></div>
+                
+                <div class="v-stat"><span>Move Speed (Centi)</span><span>${getVal(row, iMap.speed) ?? '-'}</span></div>
+                <div class="v-stat"><span>Meters Traveled</span><span>${getVal(row, iMap.meters) ?? '-'}m</span></div>
+                
+                <div class="v-stat" style="grid-column: 1 / -1; border-top: 1px dashed var(--color-dark); margin-top: 4px; padding-top: 8px;">
+                    <span>Interval Kills (Reg / Eli / Cha / Boss)</span>
+                    <span style="color:var(--color-neutral)">${getVal(row, iMap.kReg)??0} / ${getVal(row, iMap.kEli)??0} / ${getVal(row, iMap.kCha)??0} / <span class="val-gold">${getVal(row, iMap.kBos)??0}</span></span>
+                </div>
+            `;
+
+            html += `
+            <div class="v-matrix-row">
+                <div class="v-matrix-timecol">
+                    ${timeStr}
+                    <div class="v-matrix-marker"></div>
+                </div>
+                <div class="v-matrix-datacol">
+                    <div class="v-matrix-grid">
+                        ${dataGrid}
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    window.toggleInspectRow = function(targetId) {
+        const row = document.getElementById(`inspect-row-${targetId}`);
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+    };
+
+    exportTypeSelect.addEventListener('change', () => {
+        const isExp = exportTypeSelect.value === 'expedition-weekly';
+        document.getElementById('scopeGroup').style.display = isExp ? 'none' : 'flex';
+        exportScopeSelect.value = 'current';
+        topGroup.style.display = 'flex';
+    });
+
+    exportScopeSelect.addEventListener('change', () => {
+        topGroup.style.display = exportScopeSelect.value === 'current' ? 'flex' : 'none';
+    });
+
+    loadBtn.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) { addLog('Error: Authentication key required.', true); return; }
+
+        if (saveKeyCheck.checked) localStorage.setItem('hellforgedKey', apiKey);
+        else localStorage.removeItem('hellforgedKey');
+
+        const exportId = exportTypeSelect.value;
+        const scope = exportScopeSelect.value;
+        const top = parseInt(topPlayersInput.value) || 20;
+
+        let proxyQuery = `exportId=${encodeURIComponent(exportId)}&scope=${encodeURIComponent(scope)}`;
+        if (scope === 'current') proxyQuery += `&top=${top}`;
+
+        addLog('Connecting to Vanguard network...');
+        loadBtn.disabled = true;
+        tableContainer.style.display = 'none'; 
+
+        try {
+            const response = await fetch(`http://www.village.wz.sk/proxy.php?${proxyQuery}`, {
+                method: 'GET',
+                headers: { 'x-hellforged-export-key': apiKey }
+            });
+
+            if (response.status === 401) { addLog('Authentication failed. Check Key.', true); return; }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = await response.json();
+            
+            tableBody.innerHTML = ''; 
+            document.getElementById('tableTitle').textContent = `Sector Logs: ${exportId}`;
+
+            if (data?.entries && data.entries.length > 0) {
+                data.entries.forEach((entry, idx) => {
+                    
+                    const rank = entry?.rank ?? '-';
+                    const name = entry?.displayName ?? 'Unknown';
+                    const score = entry?.score ?? 0;
+                    
+                    const runData = entry?.decodedEvidence?.run || {};
+                    const timeSurv = formatTime(runData?.timeSurvivedMs);
+                    const diff = runData?.difficultyId || 'Normal';
+                    const endState = (runData?.endState || 'unknown').toLowerCase();
+                    
+                    const chaos = entry?.decodedEvidence?.metaProgress?.chaosLevel ?? '-';
+                    const totals = entry?.decodedEvidence?.totals || {};
+                    
+                    // Logic to extract and format Discord connection state
+                    const discordInfo = entry?.storedEvidence?.discordIdentity;
+                    const discordName = (discordInfo?.isLinked && (discordInfo.globalName || discordInfo.username)) ? (discordInfo.globalName || discordInfo.username) : null;
+                    const discordHtml = discordName ? `<span class="sub-text" style="color: #8EA1E1; font-weight: 500;">Discord: ${escapeHtml(discordName)}</span>` : '';
+
+                    let stateBadge = `<span class="badge">${endState}</span>`;
+                    if (endState === 'won') stateBadge = `<span class="badge badge-success">Victorious</span>`;
+                    else if (endState === 'lost') stateBadge = `<span class="badge badge-danger">Defeated</span>`;
+
+                    const uId = entry?.playFabEntityId || `r-${idx}`;
+
+                    // Main Row
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="rank-col">#${rank}</td>
+                        <td>
+                            <span class="primary-text">${escapeHtml(name)}</span>
+                            ${discordHtml}
+                            <span class="sub-text">Chaos ${chaos} | Diff: ${escapeHtml(diff)}</span>
+                        </td>
+                        <td><span class="primary-text" style="font-size:15px">${score.toLocaleString()}</span><span class="sub-text">Total Score</span></td>
+                        <td><span class="primary-text">${timeSurv}</span><span class="sub-text">Lvl ${runData?.finalInGameLevel ?? '-'}</span></td>
+                        <td>${stateBadge}</td>
+                        <td><span class="primary-text" style="color:var(--color-primary)">${formatCompact(totals?.damageDealtRaw)}</span></td>
+                        <td><span class="primary-text" style="color:var(--color-gold)">${formatCompact(totals?.goldCollected)}</span></td>
+                        <td><span class="primary-text">${formatCompact(totals?.enemyKills?.all)}</span></td>
+                        <td style="text-align:center;"><button class="btn-outline" onclick="toggleInspectRow('${uId}')">Inspect Report</button></td>
+                    `;
+                    tableBody.appendChild(tr);
+
+                    // Inspect Row
+                    const abilities = runData?.pickedAbilityIds || [];
+                    const skillsHtml = abilities.length > 0 ? abilities.map(a => `<span class="ability-tag">${escapeHtml(a)}</span>`).join('') : '<span class="sub-text">No abilities equipped.</span>';
+
+                    const expTr = document.createElement('tr');
+                    expTr.id = `inspect-row-${uId}`;
+                    expTr.className = 'inspect-row';
+                    expTr.style.display = 'none';
+                    
+                    expTr.innerHTML = `
+                        <td colspan="9">
+                            
+                            <div class="stats-grid">
+                                <div class="stat-box">
+                                    <h5>Player Summary</h5>
+                                    <div class="kv-pair"><span class="kv-label">Account Init</span> <span class="kv-val">${entry?.decodedEvidence?.metaProgress?.saveCreatedAtUtc ? new Date(entry.decodedEvidence.metaProgress.saveCreatedAtUtc).toLocaleDateString() : 'N/A'}</span></div>
+                                    <div class="kv-pair"><span class="kv-label">Triumphs / Runs</span> <span class="kv-val">${entry?.decodedEvidence?.metaProgress?.completedAchievementsCount ?? 0} / ${entry?.decodedEvidence?.metaProgress?.qualifyingRunsStarted ?? 0}</span></div>
+                                    <div class="kv-pair" style="border:none"><span class="kv-label">Net Shards</span> <span class="kv-val" style="color:var(--color-primary)">${totals?.chaosShardsGained ?? 0} gained / ${totals?.chaosShardsSpent ?? 0} spent</span></div>
+                                </div>
+                                <div class="stat-box">
+                                    <h5>Run Setup</h5>
+                                    <div class="ability-list">${skillsHtml}</div>
+                                </div>
+                                <div class="stat-box">
+                                    <h5>Combat Totals</h5>
+                                    <div class="kv-pair"><span class="kv-label">Slain (Reg/Eli/Cha)</span> <span class="kv-val">${(totals?.enemyKills?.regular ?? 0).toLocaleString()} / ${totals?.enemyKills?.elite ?? 0} / ${totals?.enemyKills?.champion ?? 0}</span></div>
+                                    <div class="kv-pair"><span class="kv-label">Bosses Slain</span> <span class="kv-val" style="color:var(--color-gold)">${totals?.enemyKills?.boss ?? 0}</span></div>
+                                    <div class="kv-pair" style="border:none"><span class="kv-label">Total Exp Extracted</span> <span class="kv-val">${(totals?.xpGained ?? 0).toLocaleString()}</span></div>
+                                </div>
+                            </div>
+
+                            <div class="dash-panel">
+                                <h4>
+                                    Chronological Event Timeline
+                                    <div class="timeline-controls">
+                                        <span class="controls-hint">Scroll inside container to pan.</span>
+                                        <button class="btn-zoom" onclick="zoomTimeline('${uId}', -0.5)">- Zoom</button>
+                                        <button class="btn-zoom" onclick="zoomTimeline('${uId}', 0)">Reset</button>
+                                        <button class="btn-zoom" onclick="zoomTimeline('${uId}', 0.5)">+ Zoom</button>
+                                    </div>
+                                </h4>
+                                ${buildHorizontalTimeline(entry?.decodedEvidence?.events, runData?.timeSurvivedMs, uId)}
+                            </div>
+
+                            <div class="dash-panel">
+                                <h4>Telemetry Node Matrix</h4>
+                                ${buildVerticalMatrix(entry?.decodedEvidence?.sampledTimeline)}
+                            </div>
+                            
+                            <details>
+                                <summary class="json-summary">View Raw Telemetry JSON Payload</summary>
+                                <div class="json-content">${escapeHtml(JSON.stringify(entry, null, 2))}</div>
+                            </details>
+
+                        </td>
+                    `;
+                    tableBody.appendChild(expTr);
+                });
+            } else {
+                tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 40px; color:var(--color-neutral); font-style:italic;">No records found matching criteria.</td></tr>`;
+            }
+
+            tableContainer.style.display = 'block';
+            addLog('Extraction complete.');
+
+        } catch (error) {
+            addLog(`Error: ${error.message}`, true);
+        } finally {
+            loadBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
